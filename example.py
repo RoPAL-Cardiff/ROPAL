@@ -6,16 +6,25 @@ import habitat
 
 
 def example():
-    with habitat.Env(config=habitat.get_config("configs/pointnav.yaml")) as env:
+    """TODO: Docstring for example.
+
+    :function: TODO
+    :returns: TODO
+
+    """
+
+    config = habitat.get_config("configs/pointnav.yaml")
+
+    with habitat.Env(config=config) as env:
 
         print("Environment creation successful")
-        observations = env.reset()
+        _ = env.reset()
 
         print("Agent stepping around inside environment.")
 
         count_steps = 0
         while not env.episode_over:
-            observations = env.step(env.action_space.sample())
+            _ = env.step(env.action_space.sample())
             count_steps += 1
 
         print("Episode finished after {} steps.".format(count_steps))

@@ -7,7 +7,7 @@
 import habitat
 
 
-with habitat.Env(config=habitat.get_config("pointnav.yaml")) as env:
+with habitat.Env(config=habitat.get_config("configs/pointnav.yaml")) as env:
     print("Environment creation successful")
     observations = env.reset()
 

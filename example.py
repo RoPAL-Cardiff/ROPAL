@@ -33,23 +33,29 @@ def example():
 
     env = make_env_fn(config, env_class)
 
-    print("Environment creation successful")
-    _ = env.reset()
-
-    print("Agent stepping around inside environment.")
-
-    count_steps = 0
     n_steps = 500
+    n_episodes = env.number_of_episodes
 
-    for step in range(n_steps):
-        action = env.action_space.sample()
-        while action["action"] == "STOP":
+    for episode in range(n_steps):
+        count_steps = 0
+        _ = env.reset()
+
+        scene_name = env.current_episode.scene_id.split(sep="/")[-1].strip(".glb")
+        print(f"\nStarting episode {episode+1}/{n_episodes} in {scene_name}...")
+
+        print("Stepping around...")
+        for step in range(n_steps):
             action = env.action_space.sample()
 
-        _ = env.step(action)
-        count_steps += 1
+            while action["action"] == "STOP":
+                action = env.action_space.sample()
 
-    print("Episode finished after {} steps.".format(count_steps))
+            _ = env.step(action)
+            count_steps += 1
+
+        print(
+            f"Episode {episode+1} in scene {scene_name} finished after {count_steps} steps."
+        )
 
 
 def vector_example():
@@ -62,29 +68,40 @@ def vector_example():
 
     config.defrost()
     config.TASK_CONFIG = baseline_config.TASK_CONFIG
-    config.NUM_ENVIRONMENTS = 2
+    config.NUM_ENVIRONMENTS = 14
     config.SENSORS = baseline_config.SENSORS
     config.SIMULATOR_GPU_ID = 0
     config.freeze()
 
     env_class = habitat.Env
-
     envs = construct_envs(config, env_class)
 
-    print("Environment creation successful")
     _ = envs.reset()
 
-    print("Agent stepping around inside environment.")
-
-    count_steps = 0
     n_steps = 500
+    n_envs = envs.num_envs
+    n_episodes = envs.number_of_episodes[0]
 
-    for step in range(n_steps):
-        random_actions = [action_space.sample() for action_space in envs.action_spaces]
-        _ = envs.step(random_actions)
-        count_steps += 1
+    for episode in range(n_episodes):
+        count_steps = 0
+        print(
+            f"Starting episode {episode}/{n_episodes} in parallel processes across {n_envs} environments."
+        )
+        scene_names = [
+            ep.scene_id.split("/")[-1].strip(".glb") for ep in envs.current_episodes()
+        ]
 
-    print("Episode finished after {} steps.".format(count_steps))
+        for i, scene in enumerate(scene_names):
+            print(f"Stepping around in Environment {i+1}: {scene}..")
+
+        for step in range(n_steps):
+            random_actions = [
+                action_space.sample() for action_space in envs.action_spaces
+            ]
+            _ = envs.step(random_actions)
+            count_steps += 1
+
+        print("Episodes finished after {} steps.".format(count_steps))
 
 
 def threaded_vector_example():
@@ -97,7 +114,7 @@ def threaded_vector_example():
 
     config.defrost()
     config.TASK_CONFIG = baseline_config.TASK_CONFIG
-    config.NUM_ENVIRONMENTS = 2
+    config.NUM_ENVIRONMENTS = 14
     config.SENSORS = baseline_config.SENSORS
     config.SIMULATOR_GPU_ID = 0
     config.freeze()
@@ -106,20 +123,32 @@ def threaded_vector_example():
 
     envs = construct_threaded_envs(config, env_class)
 
-    print("Environment creation successful")
     _ = envs.reset()
 
-    print("Agent stepping around inside environment.")
-
-    count_steps = 0
     n_steps = 500
+    n_envs = envs.num_envs
+    n_episodes = envs.number_of_episodes[0]
 
-    for step in range(n_steps):
-        random_actions = [action_space.sample() for action_space in envs.action_spaces]
-        _ = envs.step(random_actions)
-        count_steps += 1
+    for episode in range(n_episodes):
+        count_steps = 0
+        print(
+            f"Starting episode {episode}/{n_episodes} in parallel threads across {n_envs} environments."
+        )
+        scene_names = [
+            ep.scene_id.split("/")[-1].strip(".glb") for ep in envs.current_episodes()
+        ]
 
-    print("Episode finished after {} steps.".format(count_steps))
+        for i, scene in enumerate(scene_names):
+            print(f"Stepping around in Environment {i+1}: {scene}..")
+
+        for step in range(n_steps):
+            random_actions = [
+                action_space.sample() for action_space in envs.action_spaces
+            ]
+            _ = envs.step(random_actions)
+            count_steps += 1
+
+        print("Episodes finished after {} steps.".format(count_steps))
 
 
 if __name__ == "__main__":

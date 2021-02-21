@@ -1,7 +1,7 @@
 Welcome to ropal's documentation!
 =================================
 
-.. automodule:: example
+.. automodule:: test 
     :members:
 
 .. toctree::
